@@ -1,0 +1,41 @@
+.macro printChar (%char)
+	li a7, 11
+	li a0, %char
+	ecall
+.end_macro
+
+.macro SCREEN
+	0xFF000000
+.end_macro
+
+.macro SCREEN_END
+	0xFF012C00
+.end_macro
+
+.macro printInt (%reg)
+	li a7, 1
+	mv a0, %reg
+	ecall
+.end_macro
+
+.macro printString (%str)
+.data
+	text: .string %str
+	.text
+	li a7, 4
+	la a0, text
+	ecall
+.end_macro
+
+.macro malloc(%bytes, %reg)
+li a7, 9
+li a0, %bytes 
+ecall 
+mv %reg, a0
+
+.end_macro
+
+.macro exitProg
+	li a7, 10
+	ecall
+.end_macro

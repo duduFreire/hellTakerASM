@@ -1,0 +1,96 @@
+.data
+mathRandomSeed: .word 5864
+
+.text
+
+
+# Returns the square of the magnitude of a vector.
+# a0 = vec
+magSq:
+	lw t0, 0(a0)
+	lw t1, 4(a0)
+	mul t0, t0, t0
+	mul t1, t1, t1
+	add a0, t0, t1
+	jr ra
+	
+# Returns floor(sqrt(x)).
+# a0 = x
+# t0 = result, mask = t1, i = t2
+sqrt:
+	li t0, 0
+	li t1, 1
+	slli t1, t1, 14
+	li t2, 14
+	
+	forSqrt:
+	blt t2, zero, exitSqrt
+	or t3, t0, t1
+	mul t4, t3, t3
+	bgt t4, a0, notIfSqrt
+	
+	mv t0, t3
+	
+	notIfSqrt:
+	srli t1, t1, 1
+	
+	addi t2, t2, -1
+	j forSqrt
+	
+	exitSqrt:
+	mv a0, t0
+	jr ra
+	
+
+
+# Returns the square of the euclidean distance between two 2D-vectors.
+# a0 = vec1, a1 = vec2
+distSq:
+	lb t0, 0(a0) 
+	lb t1, 0(a1)
+	sub t0, t0, t1
+	mul t0, t0, t0
+	
+	lb t1, 1(a0)
+	lb t2, 1(a1)
+	sub t1, t1, t2
+	mul t1, t1, t1
+	add a0, t0, t1
+	jr ra
+
+# Returns a random integer between 0 and 32767.
+rand:
+	li t0, 10877
+	la t1, mathRandomSeed
+	lw t1, 0(t1)
+	mul a0, t0, t1
+	addi a0, a0 1
+	li t0, 32767
+	and a0, a0, t0
+	la t0, mathRandomSeed
+	sb a0, 0(t0)
+	jr ra
+	
+# Returns a random integer between a0 and a1.
+randRange:
+	mv t2, a0
+	mv t3, ra
+	jal rand
+	mv ra, t3
+	
+	sub t0, a1, t2
+	addi t0, t0, 1
+	li t1, 32767
+	div t0, t1, t0
+	div t0, a0, t0
+	add a0, t0, t2
+	
+	jr ra
+
+
+
+
+
+
+
+	
