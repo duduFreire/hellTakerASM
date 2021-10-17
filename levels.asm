@@ -1,3 +1,3 @@
 .data
 levels:.word 23
-.string "000000000000uuuwp0000uwwmww0000uwmwm00000wwuuu0000uwbwwbwuu0uwbwbwwgu0"
+.string "000000000000wwww000000m0ssww000ws00zzb000ww00wsw000pw00wmw0000000gwm00"

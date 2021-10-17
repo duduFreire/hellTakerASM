@@ -22,11 +22,11 @@ grid_initialize:
 	
 	# width = 10
 	li t3, 10
-	sb t3, 0(t0)
+	sw t3, 0(t0)
 	
 	# height = 7
 	li t3, 7
-	sb t3, 4(t0)
+	sw t3, 4(t0)
 	
 	# Allocate 70*4 = 280 bytes for this.cells
 	li a7, 9
@@ -36,9 +36,9 @@ grid_initialize:
 	
 	mv t3, zero
 	grid_initialize_loop:
-	# Allocates 12 bytes for cell
+	# Allocates 13 bytes for cell
 	li a7, 9
-	li a0, 12
+	li a0, 13
 	ecall 
 	
 	# cells[i] = cell
@@ -53,12 +53,12 @@ grid_initialize:
 	rem t4, t3, t5
 	mv a1, t4
 	addi sp, sp, -8
-	sb t4, 0(sp)
+	sw t4, 0(sp)
 	
 	# Setting up second cell argument
 	divu t4, t3, t5
 	mv a2, t4
-	sb t4, 4(sp)
+	sw t4, 4(sp)
 	
 	# Setting up third cell argument
 	add t4, t1, t3
@@ -115,13 +115,14 @@ grid_initialize:
 	bne t4, t5, grid_intialize_if2
 	
 	# this.goalI = this.getI(i);this.goalJ = this.getJ(i)
-	lb t4, 0(sp)
-	sb t4, 16(t0)
-	lb t4, 4(sp)
-	sb t4, 20(t0)
+	lw t4, 0(sp)
+	sw t4, 16(t0)
+	lw t4, 4(sp)
+	sw t4, 20(t0)
 	
 	grid_intialize_if2:
 	
+	addi sp, sp, 8
 	addi t3, t3, 1
 	add t4, t1, t3
 	lb t4, 0(t4)

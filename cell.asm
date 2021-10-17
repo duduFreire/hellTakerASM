@@ -11,7 +11,7 @@
 #		BYTE: isGoal 10
 #		BYTE: isWalkable 11
 #		BYTE: mapPart 12
-# 		TOTAL SIZE : 12 BYTES
+# 		TOTAL SIZE : 13 BYTES
 
 .text
 	
@@ -90,10 +90,7 @@ cell_initialize:
 	
 	cell_intiialize_if10:
 	li t1, '0'
-	beq a3, t1, cell_intiialize_if11
-	li t1, 'u'
-	beq a3, t1, cell_intiialize_if11
-	
+	bne a3, t1, cell_intiialize_if11
 	sb zero, 12(a0)
 	
 	cell_intiialize_if11:
@@ -105,12 +102,18 @@ cell_initialize:
 # t1 = columnCounter 
 # t2 = lineCounter
 cell_drawRect:
+	# t0 = frame == 0 ? 0xFF0 : 00xFF1
 	li t0, 0xFF0
 	add t0, t0, a5
 	slli t0, t0, 20
-	add t0, t0, a1 
+	
+	# t0 = screen + x
+	add t0, t0, a0
+	
+	# t1 = 320 * y
 	li t1, 320 
-	mul t1, t1, a3 
+	mul t1, t1, a1
+	# t0 = screen + x + 320*y
 	add t0, t0, t1 
 	
 	mv t1, zero
@@ -135,24 +138,33 @@ cell_drawRect:
 	ret
 
 # a0 = this
-# t1 = this.i*this.size
-# t2 = this.j*this.size
-cell_display: 
-	lb t0, 12(a0)
+# t1 = this.j*this.size
+# t2 = this.i*this.size
+cell_display:
+	# t0 =  mapPart
+	lbu t0, 12(a0)
 	
+	# if !mapPart: ret
 	beq t0, zero, cell_display_if1
-	lb t1, 2(a0)
-	lb t2, 0(a0)
+	
+	# t1 = size
+	lbu t1, 2(a0)
+	# t2 = i
+	lbu t2, 0(a0)
+	# t2 = i * size
 	mul t2, t2, t1 
-	lb t3, 1(a0)
+	# t3 = j
+	lbu t3, 1(a0)
+	# t1 = j * size
 	mul t1, t1, t3
 	
+	# t3 = this
 	mv t3, a0
-	mv a0, t1
-	mv a1, t2
+	mv a0, t2
+	mv a1, t1
 	li a4, 0x4c4c4c4c
-	lb a2, 2(t3)
-	lb a3, 2(t3)
+	lbu a2, 2(t3)
+	mv a3, a2
 	mv t3, ra
 	call cell_drawRect
 	mv ra, t3
