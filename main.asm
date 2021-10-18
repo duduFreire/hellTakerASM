@@ -138,6 +138,10 @@ displayCells:
 
 
 handleInput:
+	# push ra
+	addi sp, sp, -4
+	sw ra, 0(sp)
+	
 	li t1, 0xFF200000	# carrega o endereço de controle do KDMMIO
 	lw t0, 0(t1)			    # Le bit de Controle Teclado
 	andi t0, t0,0x0001		# mascara o bit menos significativo
@@ -148,12 +152,27 @@ handleInput:
 	li t0, 27
 	beq t2, t0, mainExit
 	
+	# a0 = this
+	la a0, grid
+	lw a0, 12(a0)
+	# a1 = key
+	mv a1, t2
+	
+	call player_move
 	
 	
 	handleInput_ret:
+	# pop ra
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	
 	ret
 
-main:	
+# s0 = frame
+main:
+	# frame = 1
+	li s0, 1
+	
 	# Initialize grid with level 1 and 23 moves.
 	la a0, grid 
 	la t0, levels
@@ -163,8 +182,8 @@ main:
 	call grid_initialize
 	
 	# Display cells at frames 0 and 1.
-	li a0, 0
-	call displayCells
+	#li a0, 0
+	#call displayCells
 	li a0, 1
 	call displayCells
 	
@@ -172,18 +191,15 @@ main:
 	
 	call handleInput
 	
-	#j mainLoop
-	
-	# grid.player.display(1)
-	la a0, grid 
-	lw a0, 12(a0)
-	li a1, 1
-	call player_display
-	
-	# Show frame 1.
+	# Show frame
 	li t0,0xFF200604
-	li t1, 1 
-	sw t1, 0(t0)
+	sw s0, 0(t0)
+	
+	# Alternate frame
+	#xori s0, s0, 1
+	
+	j mainLoop
+	
 	
 	
 	mainExit:

@@ -15,6 +15,11 @@
 
 .data
 .include "resources/monsterImage.s"
+.include "resources/keyImage.s"
+.include "resources/spikeImage.s"
+.include "resources/blockImage.s"
+.include "resources/treasureImage.s"
+.include "resources/heroTest.data"
 
 .text
 	
@@ -163,22 +168,6 @@ cell_display:
 	sw t2, 12(sp)
 	# *(sp+16) = this.j * size
 	sw t1, 16(sp)
-	
-	# if hasMonster
-	lbu t0, 8(a0)
-	beq t0, zero, cell_display_if2
-	
-	# Draw monster and return.
-	la a0, monsterImage 
-	lw a1, 12(sp)
-	lw a2, 16(sp)
-	lw a3, 8(sp)
-	call drawImage
-	j cell_display_if1
-	
-	
-	
-	cell_display_if2:
 
 	# t0 =  mapPart
 	lbu t0, 12(a0)
@@ -195,6 +184,103 @@ cell_display:
 	lbu a2, 2(t3)
 	mv a3, a2
 	call cell_drawRect
+	
+	# if hasMonster
+	lw t0, 4(sp)
+	lbu t0, 8(t0)
+	beq t0, zero, cell_display_if2
+	
+	# Draw monster.
+	la a0, monsterImage 
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	j cell_display_if1
+	
+	cell_display_if2:
+	# if hasKey
+	lw t0, 4(sp)
+	lbu t0, 4(t0)
+	beq t0, zero, cell_display_if4
+	
+	# Draw key
+	la a0, keyImage 
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	j cell_display_if1
+	
+	cell_display_if4:
+	# if hasBlock
+	lw t0, 4(sp)
+	lbu t0, 5(t0)
+	beq t0, zero, cell_display_if3
+	
+	# Draw block
+	la a0, blockImage 
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	
+	cell_display_if3:
+	# if hasSpike
+	lw t0, 4(sp)
+	lbu t0, 6(t0)
+	beq t0, zero, cell_display_if5
+	
+	# Draw spike
+	la a0, spikeImage 
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	j cell_display_if1
+	
+	cell_display_if5:
+	# if hasSpike
+	lw t0, 4(sp)
+	lbu t0, 3(t0)
+	beq t0, zero, cell_display_if6
+	
+	# Draw spike
+	la a0, treasureImage 
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	j cell_display_if1
+	
+	cell_display_if6:
+	# if hasGoal
+	lw t0, 4(sp)
+	lbu t0, 10(t0)
+	beq t0, zero, cell_display_if7
+	
+	# Draw goal
+	la a0, levels
+	addi a0, a0, 76
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	j cell_display_if1
+	
+	cell_display_if7:
+	# if hasPlayer
+	lw t0, 4(sp)
+	lbu t0, 9(t0)
+	beq t0, zero, cell_display_if1
+	
+	# Draw player
+	la a0, heroTest
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	
 	
 	cell_display_if1:
 	lw ra, 0(sp)
