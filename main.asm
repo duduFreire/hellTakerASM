@@ -5,9 +5,9 @@ j main
 
 .data
 grid: .word 0,0,0,0,0,0
+playingGame: .byte 0
 
 .include "resources/introScreen.s"
-.include "resources/heroAnimation.s"
 .include "levels.asm"
 .include "grid.asm"
 .text
@@ -94,25 +94,66 @@ drawImage_linha:
 	
 	jr ra
 
+# Display all cells at frame a0.
+# a0 = frame
+# t0 = baseAddress
+# t1 = finalAddress
+displayCells:
+	# Save ra and a0 at stack.
+	addi sp, sp, -16
+	sw ra, 0(sp)
+	sw a0, 4(sp)
+
+	# t0 = grid.cells
+	la t0, grid
+	lw t0, 8(t0)
+	
+	# t1 = grid.cells + 70 * 4
+	addi t1, t0, 280
+	displayCells_loop:
+	# a0 = grid.cells[i]
+	lw a0, 0(t0)
+	# a1 = frame
+	lw a1, 4(sp)
+	
+	# Saving t0 and t1 in the stack
+	sw t0, 8(sp)
+	sw t1, 12(sp)
+	
+	# cell.display(frame)
+	call cell_display
+	
+	# Restore t0 and t1
+	lw t0, 8(sp)
+	lw t1, 12(sp)
+
+	# Increment t0 and exit or continue loop.
+	addi t0, t0, 4
+	blt t0, t1, displayCells_loop
+	
+	# Recover ra and sp and return.
+	lw ra, 0(sp)
+	addi sp, sp, 16
+	ret
+
 
 handleInput:
+	li t1, 0xFF200000	# carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			    # Le bit de Controle Teclado
+	andi t0, t0,0x0001		# mascara o bit menos significativo
+   	beq t0, zero,handleInput_ret   	   	# Se não há tecla pressionada então vai para FIM
+  	lw t2, 4(t1)  			# le o valor da tecla tecla
+	
+	# If esc is pressed exit program
+	li t0, 27
+	beq t2, t0, mainExit
+	
+	
+	
+	handleInput_ret:
+	ret
 
-main:
-	la a0, introScreen
-	#jal drawFullImage
-	
-	# Espera o usuário clicar uma tecla pra iniciar o  jogo.
-	j start
-	introScreenLoop:
-	li t1,0xFF200000
-	lw t0,0(t1)	
-	andi t0,t0,0x0001		
-   	beq t0,zero,introScreenLoop
-	j start
-	
-	start:
-	#call clearScreen
-	
+main:	
 	# Initialize grid with level 1 and 23 moves.
 	la a0, grid 
 	la t0, levels
@@ -121,32 +162,29 @@ main:
 	li a2, 23
 	call grid_initialize
 	
-	# Display all cells.
-	# t0 = baseAddress
-	# t1 = finalAddress
-	la t0, grid
-	lw t0, 8(t0)
+	# Display cells at frames 0 and 1.
+	li a0, 0
+	call displayCells
+	li a0, 1
+	call displayCells
 	
-	addi t1, t0, 280
-	displayCells_loop:
-	addi sp, sp, -8
-	sw t0, 0(sp)
-	sw t1, 4(sp)
+	mainLoop:
 	
-	lw a0, 0(t0)
-	call cell_display
+	call handleInput
 	
-	lw t0, 0(sp)
-	lw t1, 4(sp)
-	addi sp, sp, 8
+	#j mainLoop
 	
-	addi t0, t0, 4
-	blt t0, t1, displayCells_loop
+	# grid.player.display(1)
+	la a0, grid 
+	lw a0, 12(a0)
+	li a1, 1
+	call player_display
 	
-	
-	
+	# Show frame 1.
+	li t0,0xFF200604
+	li t1, 1 
+	sw t1, 0(t0)
 	
 	
-	
-	
+	mainExit:
 	exitProg

@@ -13,6 +13,9 @@
 #		BYTE: mapPart 12
 # 		TOTAL SIZE : 13 BYTES
 
+.data
+.include "resources/monsterImage.s"
+
 .text
 	
 
@@ -138,14 +141,12 @@ cell_drawRect:
 	ret
 
 # a0 = this
-# t1 = this.j*this.size
-# t2 = this.i*this.size
+# a1 = frame
 cell_display:
-	# t0 =  mapPart
-	lbu t0, 12(a0)
-	
-	# if !mapPart: ret
-	beq t0, zero, cell_display_if1
+	addi sp, sp, -20
+	sw ra, 0(sp)
+	sw a0, 4(sp)
+	sw a1, 8(sp)
 	
 	# t1 = size
 	lbu t1, 2(a0)
@@ -158,18 +159,46 @@ cell_display:
 	# t1 = j * size
 	mul t1, t1, t3
 	
+	# *(sp+12) = this.i * size
+	sw t2, 12(sp)
+	# *(sp+16) = this.j * size
+	sw t1, 16(sp)
+	
+	# if hasMonster
+	lbu t0, 8(a0)
+	beq t0, zero, cell_display_if2
+	
+	# Draw monster and return.
+	la a0, monsterImage 
+	lw a1, 12(sp)
+	lw a2, 16(sp)
+	lw a3, 8(sp)
+	call drawImage
+	j cell_display_if1
+	
+	
+	
+	cell_display_if2:
+
+	# t0 =  mapPart
+	lbu t0, 12(a0)
+	
+	# if !mapPart: ret
+	beq t0, zero, cell_display_if1
+	
 	# t3 = this
-	mv t3, a0
-	mv a0, t2
-	mv a1, t1
+	lw t3, 4(sp)
+	lw a0, 12(sp)
+	lw a5, 8(sp)
+	lw a1, 16(sp)
 	li a4, 0x4c4c4c4c
 	lbu a2, 2(t3)
 	mv a3, a2
-	mv t3, ra
 	call cell_drawRect
-	mv ra, t3
 	
 	cell_display_if1:
+	lw ra, 0(sp)
+	addi sp, sp, 20
 	ret
 	
 	

@@ -87,9 +87,9 @@ grid_initialize:
 	lb a1, 0(sp)
 	lb a2, 4(sp)
 	
-	# Allocates 4 bytes for player
+	# Allocates 16 bytes for player
 	li a7, 9
-	li a0, 4
+	li a0, 16
 	ecall
 	sw a0, 12(t0)
 	
