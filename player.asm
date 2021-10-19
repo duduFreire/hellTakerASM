@@ -111,14 +111,18 @@ player_move:
 	
 	player_move_ifw1:
 	
-	# if newCell.hasMonster
+	# if newCell.hasMonster or newCell.hasBlock
 	lbu t2, 8(t1)
-	beq t2, zero, player_move_ifw2
+	bne t2, zero, player_move_if_monsterOrBlock
 	
+	lbu t2, 5(t1)
+	beq t2, zero, player_move_ret
+	
+	player_move_if_monsterOrBlock:
 	# t2 = newJ - 1
 	addi t2, t0, -1
 	# if newJ-1 >= 0
-	blt t2, zero, player_move_ifw2
+	blt t2, zero, player_move_ret
 	
 	# t3 = 10*(newJ-1)
 	li t3, 10
@@ -141,6 +145,10 @@ player_move:
 	# if grid.cells[newI][newJ-1].isWalkable
 	lbu t3, 11(t4)
 	beq t3, zero, player_move_ifw3
+	
+	# if newCell.hasMonster
+	lbu t3, 8(t1)
+	beq t3, zero, player_move_block
 	
 	li t0, 1
 	
@@ -173,9 +181,19 @@ player_move:
 	mv a1, s0
 	call cell_display
 	
+	# this.moves--
+	lw t0, 4(sp)
+	lw t1, 8(t0)
+	addi t1, t1, -1
+	sw t1, 4(sp)
+	
 	j player_move_ret
 	
 	player_move_ifw3:
+	# if newCell.hasMonster
+	lbu t3, 8(t1)
+	beq t3, zero, player_move_ret
+	
 	# newCell.hasMonster = false
 	sb zero, 8(t1)
 	# newCell.isWalkable = true
@@ -194,7 +212,47 @@ player_move:
 	sw t1, 4(sp)
 	
 	j player_move_ret
-	player_move_ifw2:
+	
+	player_move_block:
+	
+	li t0, 1
+	
+	# grid.cells[oldI][oldJ].hasBlock = false
+	sb zero, 5(t1)
+	# grid.cells[oldI][oldJ].isWalkable = true
+	sb t0, 11(t1)
+	
+	# push t4
+	addi sp, sp, -4
+	sw t4, 0(sp)
+	
+	# Erase old block
+	mv a0, t1
+	mv a1, s0
+	call cell_display
+	
+	# pop t4
+	lw t4, 0(sp)
+	addi sp, sp, 4
+	
+	li t0, 4
+	# grid.cells[newI][newJ-1].hasBlock = true
+	sb t0, 5(t4)
+	# grid.cells[newI][newJ-1].isWalkable = false
+	sb zero, 11(t4)
+	
+	# Draw new block
+	mv a0, t4
+	mv a1, s0
+	call cell_display
+	
+	# this.moves--
+	lw t0, 4(sp)
+	lw t1, 8(t0)
+	addi t1, t1, -1
+	sw t1, 4(sp)
+	
+	j player_move_ret
 	
 	
 	player_move_ret:
@@ -235,21 +293,3 @@ player_display:
 	
 	
 	ret
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
