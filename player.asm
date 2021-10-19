@@ -140,7 +140,7 @@ player_move:
 	
 	# if grid.cells[newI][newJ-1].isWalkable
 	lbu t3, 11(t4)
-	beq t3, zero, player_move_ret
+	beq t3, zero, player_move_ifw3
 	
 	li t0, 1
 	
@@ -172,6 +172,26 @@ player_move:
 	mv a0, t4
 	mv a1, s0
 	call cell_display
+	
+	j player_move_ret
+	
+	player_move_ifw3:
+	# newCell.hasMonster = false
+	sb zero, 8(t1)
+	# newCell.isWalkable = true
+	li t0, 1
+	sb t0, 11(t1)
+	
+	# Erase monster.
+	mv a0, t1
+	mv a1, s0
+	call cell_display
+	
+	# this.moves--
+	lw t0, 4(sp)
+	lw t1, 8(t0)
+	addi t1, t1, -1
+	sw t1, 4(sp)
 	
 	j player_move_ret
 	player_move_ifw2:
