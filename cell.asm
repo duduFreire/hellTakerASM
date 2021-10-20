@@ -237,15 +237,15 @@ cell_display:
 	lw a2, 16(sp)
 	lw a3, 8(sp)
 	call drawImage
-	j cell_display_if1
+	j cell_display_if7
 	
 	cell_display_if5:
-	# if hasSpike
+	# if hasTreasure
 	lw t0, 4(sp)
 	lbu t0, 3(t0)
 	beq t0, zero, cell_display_if6
 	
-	# Draw spike
+	# Draw treasure
 	la a0, treasureImage 
 	lw a1, 12(sp)
 	lw a2, 16(sp)
@@ -260,8 +260,7 @@ cell_display:
 	beq t0, zero, cell_display_if7
 	
 	# Draw goal
-	la a0, levels
-	addi a0, a0, 76
+	la a0, imagesLabel
 	lw a1, 12(sp)
 	lw a2, 16(sp)
 	lw a3, 8(sp)

@@ -1,14 +1,17 @@
 .include "usefulMacros"
+.include "MACROSv21.s"
 
 .text
 j main
 
 .data
 grid: .word 0,0,0,0,0,0
+currentLevel: .byte 0
 playingGame: .byte 0
 
 .include "resources/introScreen.s"
 .include "levels.asm"
+.include "SYSTEMv21.s"
 .include "grid.asm"
 .text
 .include "screenFunctions"
@@ -175,10 +178,9 @@ main:
 	
 	# Initialize grid with level 1 and 23 moves.
 	la a0, grid 
-	la t0, levels
-	addi t0, t0, 4
-	mv a1, t0
-	li a2, 23
+	la a1, levels
+	la a2, movesLabel
+	lb a2, 0(a2)
 	call grid_initialize
 	
 	# Display cells at frames 0 and 1.
