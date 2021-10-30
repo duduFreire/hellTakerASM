@@ -2,17 +2,17 @@
 .include "MACROSv21.s"
 
 .text
-j main
+j mainMenu
 
 .data
-grid: .word 0,0,0,0,0,0
+grid: .word 0,0,0,0,0,0,0
 currentLevel: .byte 0
-playingGame: .byte 0
 
 .include "resources/introScreen.s"
 .include "levels.asm"
 .include "SYSTEMv21.s"
 .include "grid.asm"
+.include "mathFunctions"
 .text
 .include "screenFunctions"
 
@@ -25,18 +25,18 @@ drawFullImage:
 	mv t2, zero
 	addi a0, a0, 8
 	
-	drawFullImage$Loop:
-		beq t0, t1, drawFullImage$break
+	drawFullImage_Loop:
+		beq t0, t1, drawFullImage_break
 		add t3, t2, a0
-		lb t3, 0(t3)
-		sb t3, 0(t0)
+		lw t3, 0(t3)
+		sw t3, 0(t0)
 		
-		addi t2, t2, 1
-		addi t0, t0, 1
-		j drawFullImage$Loop
+		addi t2, t2, 4
+		addi t0, t0, 4
+		j drawFullImage_Loop
 	
-	drawFullImage$break:
-	jr ra
+	drawFullImage_break:
+	ret
 
 # Paints screen with black.	
 clearScreen:
@@ -48,7 +48,6 @@ clearScreen:
 	addi t0, t0, 4 
 	
 	blt t0, t1, clearScreen_loop
-	
 	
 	ret
 
@@ -145,16 +144,22 @@ handleInput:
 	addi sp, sp, -4
 	sw ra, 0(sp)
 	
-	li t1, 0xFF200000	# carrega o endereço de controle do KDMMIO
-	lw t0, 0(t1)			    # Le bit de Controle Teclado
-	andi t0, t0,0x0001		# mascara o bit menos significativo
-   	beq t0, zero,handleInput_ret   	   	# Se não há tecla pressionada então vai para FIM
-  	lw t2, 4(t1)  			# le o valor da tecla tecla
+	li t1, 0xFF200000	          # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			      # Le bit de Controle Teclado
+	andi t0, t0,0x0001		      # mascara o bit menos significativo
+   	beq t0, zero,handleInput_ret  # Se não há tecla pressionada então vai para FIM
+  	lw t2, 4(t1)  			      # le o valor da tecla tecla
 	
 	# If esc is pressed exit program
 	li t0, 27
 	beq t2, t0, mainExit
 	
+	# if 'o' is pressed go to next level
+	li t0, 'o'
+	bne t2, t0,handleInput_notO
+	j dialogueSuccess
+	
+	handleInput_notO:
 	# a0 = this
 	la a0, grid
 	lw a0, 12(a0)
@@ -170,35 +175,228 @@ handleInput:
 	addi sp, sp, 4
 	
 	ret
+	
+dialogueScreen:
+	# Set a0 to correct image and draw image
+	la a0, dialogueImages
+	li t0, 76808
+	lbu t1, currentLevel
+	mul t0, t0, t1
+	add a0, a0, t0
+	call drawFullImage
+	
+	dialogueScreen_loop:
+	
+	li t1, 0xFF200000	               # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			           # Le bit de Controle Teclado
+	andi t0, t0,0x0001		           # mascara o bit menos significativo
+   	beq t0, zero, dialogueScreen_loop  # Se não há tecla pressionada então vai para
+  	lw t2, 4(t1)  			           # le o valor da tecla tecla
+  	
+  	# if key == '1'
+  	li t1, '1'
+  	beq t1, t2, dialogueScreen_isKey
+  	
+  	# if key == '2'
+  	li t1, '2'
+  	bne t1, t2, dialogueScreen_loop
+  	
+  	dialogueScreen_isKey:
+  	# t0 = correct key
+  	la t0,correctKeys
+  	lbu t1, currentLevel
+  	add t0, t0, t1
+  	lbu t0, 0(t0)
+  	
+  	# if key is correct go to success screen
+  	beq t0, t2, dialogueSuccess
+  	# if key is incorrect die
+  	j deathScreen
+  	
+	
+	
+	j dialogueScreen_loop
+	
+victoryRoutine:	
+	la a0, victoryScreen
+	call drawFullImage
+	
+	dialogueSuccess_victoryLoop:
+	
+	li t1, 0xFF200000	                       # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			                   # Le bit de Controle Teclado
+	andi t0, t0,0x0001		           		   # mascara o bit menos significativo
+   	beq t0, zero, dialogueSuccess_victoryLoop  # Se não há tecla pressionada então vai para
+  	lw t2, 4(t1)  			           		   # le o valor da tecla tecla
+  	
+  	li t0, '2'
+  	beq t2, t0, mainExit
+  	li t0, '1'
+  	beq t2, t0, mainMenu
+	
+	j dialogueSuccess_victoryLoop
+	
+
+mainMenu:
+	la a0, mainMenuImage
+	call drawFullImage
+	
+	mainMenu_loop:
+	li t1, 0xFF200000	                       # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			                   # Le bit de Controle Teclado
+	andi t0, t0,0x0001		           		   # mascara o bit menos significativo
+   	beq t0, zero, mainMenu_loop  			   # Se não há tecla pressionada então vai para
+  	lw t2, 4(t1)  			           		   # le o valor da tecla tecla
+  	
+  	
+	li t0, '1'
+	bne t2, t0, mainMenu_not1
+	
+	la t0, currentLevel
+	sb zero, 0(t0)
+	j main
+	
+	
+	mainMenu_not1:
+	li t0, '2'
+	beq t2, t0, chapterSelect
+	
+	j mainMenu_loop 
+	
+chapterSelect:
+	la a0, chapterSelectImage
+	call drawFullImage
+	
+	chapterSelect_loop:
+	li t1, 0xFF200000	                       # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			                   # Le bit de Controle Teclado
+	andi t0, t0,0x0001		           		   # mascara o bit menos significativo
+   	beq t0, zero, chapterSelect_loop  			   # Se não há tecla pressionada então vai para
+  	lw t2, 4(t1)  			           		   # le o valor da tecla tecla
+  	
+  	li t0, '1'
+  	bne t2, t0, chapterSelect_not1
+  	
+  	li t0, 0
+  	la t2, currentLevel
+  	sb t0, 0(t2)
+  	j main
+  	
+  	chapterSelect_not1:
+  	li t0, '2'
+  	bne t2, t0, chapterSelect_not2
+  	
+  	li t0, 1
+  	la t2, currentLevel
+  	sb t0, 0(t2)
+  	j main
+  	
+  	chapterSelect_not2:
+  	li t0, '3'
+  	bne t2, t0, chapterSelect_not3
+  	
+  	li t0, 2
+  	la t2, currentLevel
+  	sb t0, 0(t2)
+  	j main
+  	
+  	chapterSelect_not3:
+  	li t0, '4'
+  	bne t2, t0, chapterSelect_not4
+  	
+  	li t0, 3
+  	la t2, currentLevel
+  	sb t0, 0(t2)
+  	j main
+  	
+  	chapterSelect_not4:
+  	li t0, '5'
+  	bne t2, t0, chapterSelect_loop
+  	
+  	li t0, 4
+  	la t2, currentLevel
+  	sb t0, 0(t2)
+  	j main
+  	
+
+	
+dialogueSuccess:
+	# check if game is finished.
+	lbu t0, currentLevel
+	li t1, 4
+	beq t0, t1, victoryRoutine
+	
+	# Set a0 to correct image and draw image
+	la a0, successImages
+	li t0, 76808
+	lbu t1, currentLevel
+	mul t0, t0, t1
+	add a0, a0, t0
+	call drawFullImage
+	
+	dialogueSuccess_loop:
+	
+	li t1, 0xFF200000	               # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			           # Le bit de Controle Teclado
+	andi t0, t0,0x0001		           # mascara o bit menos significativo
+   	beq t0, zero, dialogueSuccess_loop  # Se não há tecla pressionada então loopa
+   	
+   	# currentLevel++
+   	lbu t0, currentLevel
+   	addi t0, t0, 1
+   	la t1, currentLevel
+   	sb t0, 0(t1)
+   	
+   	call clearScreen
+   	
+   	j main
+	
+
+deathScreen:
+	la a0, badEndImage
+	call drawFullImage
+	
+	deathScreen_loop:
+	
+	li t1, 0xFF200000	               # carrega o endereço de controle do KDMMIO
+	lw t0, 0(t1)			           # Le bit de Controle Teclado
+	andi t0, t0,0x0001		           # mascara o bit menos significativo
+   	beq t0, zero, deathScreen_loop  # Se não há tecla pressionada então loopa
+   	
+	call clearScreen
+	
+	j main
+  	
 
 # s0 = frame
 main:
-	# frame = 1
-	li s0, 1
+	# frame = 0
+	mv s0, zero
 	
-	# Initialize grid with level 1 and 23 moves.
+	call clearScreen
+	
+  	# Initialize grid with currentLevel.
 	la a0, grid 
 	la a1, levels
+	li t0, 71
+	lbu t1, currentLevel
+	mul t0, t0, t1
+	add a1, a1, t0
 	la a2, movesLabel
-	lb a2, 0(a2)
+	add a2, a2, t1
+	lbu a2, 0(a2)
 	call grid_initialize
 	
-	# Display cells at frames 0 and 1.
-	#li a0, 0
-	#call displayCells
-	li a0, 1
+	
+	# Display cells at frame 0.
+	li a0, 0
 	call displayCells
 	
+	li t0,0xFF200604
+	sw s0, 0(t0)
 	mainLoop:
 	
 	call handleInput
-	
-	# Show frame
-	li t0,0xFF200604
-	sw s0, 0(t0)
-	
-	# Alternate frame
-	#xori s0, s0, 1
 	
 	j mainLoop
 	
