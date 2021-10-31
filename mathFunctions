@@ -41,6 +41,14 @@ sqrt:
 	mv a0, t0
 	jr ra
 	
+# Returns the absolute value of a0 at a0.
+# a0 = argument
+abs:
+	bge a0, zero, abs_ret
+	neg a0, a0
+	abs_ret:
+	ret
+	
 
 
 # Returns the square of the euclidean distance between two 2D-vectors.

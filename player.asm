@@ -181,10 +181,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -205,10 +205,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -246,10 +246,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -403,10 +403,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -427,10 +427,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -468,10 +468,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -628,10 +628,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -652,10 +652,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -693,10 +693,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -852,10 +852,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -876,10 +876,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	
@@ -917,10 +917,10 @@ player_move:
 	call cell_display
 	
 	# this.moves--
-	lw t0, 4(sp)
-	lw t1, 8(t0)
-	addi t1, t1, -1
-	sw t1, 4(sp)
+	lw a0, 4(sp)
+	lw t2, 8(a0)
+	addi t2, t2, -1
+	sw t2, 8(a0)
 	
 	j player_move_callUpdateGrid
 	

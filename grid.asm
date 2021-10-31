@@ -4,7 +4,8 @@
 #		WORD: player 12
 #		WORD: goalI 16
 #		WORD: goalJ 20
-# 		TOTAL SIZE : 24 BYTES
+#		WORD: hasWon 24
+# 		TOTAL SIZE : 28 BYTES
 
 .include "player.asm"
 .include "cell.asm"
@@ -94,8 +95,7 @@ grid_initialize:
 	sw a0, 12(t0)
 	
 	# a3 = moves
-	la t6, movesLabel
-	lbu a3, 0(t6)
+	mv a3, t2
 	
 	# Setup stack to initialize player.
 	addi sp, sp, -16
@@ -141,6 +141,12 @@ grid_update:
 	# push ra
 	addi sp, sp, -4
 	sw ra, 0(sp)
+	
+	# Check if dead
+	la t0, grid
+	lw t0, 12(t0)
+	lw t0, 8(t0)
+	blt t0, zero, deathScreen
 
 	# s2 = this.cells
 	lw s2, 8(a0)
@@ -217,7 +223,7 @@ grid_update:
 	grid_update_notHasSpike:
 	# if cell.hasTreasure
 	lbu t1, 3(t0)
-	beq t1, zero, grid_update_ret
+	beq t1, zero, grid_update_break
 	
 	# cell.hasTreasure = false
 	sb zero, 3(t0)
@@ -254,8 +260,55 @@ grid_update:
 	blt s1, t0, grid_update_loop
 	
 	
-	grid_update_ret:
+	grid_update_break:
 	
+	# t0 = this.player
+	la t0, grid
+	lw t0, 12(t0)
+	
+	# t1 = this.player.movers
+	lw t1, 8(t0)
+	blt t1, zero, grid_update_killPlayer
+	
+	# t1 = this.player.i
+	lw t1, 0(t0)
+	# t2 = this.goalI
+	la t3, grid
+	lw t2, 16(t3)
+	# t1 = abs(this.player.i-this.goalI)
+	sub a0, t1, t2
+	call abs
+	mv t1, a0
+	
+	# t2 = this.player.i
+	lw t2, 4(t0)
+	# t3 = goalJ
+	lw t3, 20(t3)
+	sub a0, t2, t3
+	mv t6, t1
+	call abs
+	mv t1, t6
+	add t1, t1, a0
+	addi t1, t1, -1
+	
+	# if abs(this.player.i - this.goalI) + abs(this.player.j - this.goalJ) == 1
+	bne t1, zero, grid_update_printMoves
+	
+	# t3 = this
+	la t3, grid
+	# this.hasWon = true
+	li t1, 1
+	sw t1, 24(t3)
+	
+	# Go to dialogue
+	j dialogueScreen
+	
+	j grid_update_printMoves
+	
+	
+	grid_update_killPlayer:
+	
+	grid_update_printMoves:
 	# Print "MOVES:"
 	.data 
 	movesString: .string "MOVES:"
@@ -297,6 +350,10 @@ grid_update:
 	mv a4, s0
 	li a7, 101
 	ecall
+	
+	la a0, moveSound
+	li a1, 120
+	call playSong
 	
 	
 	# pop ra and return

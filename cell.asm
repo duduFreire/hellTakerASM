@@ -260,7 +260,13 @@ cell_display:
 	beq t0, zero, cell_display_if7
 	
 	# Draw goal
+	li t0, 792
+	la t1, currentLevel
+	lbu t1, 0(t1)
+	mul t0, t0, t1
+	
 	la a0, imagesLabel
+	add a0, a0, t0
 	lw a1, 12(sp)
 	lw a2, 16(sp)
 	lw a3, 8(sp)

@@ -185,6 +185,10 @@ dialogueScreen:
 	add a0, a0, t0
 	call drawFullImage
 	
+	la a0, winSound
+	li a1, 121
+	call playSong
+	
 	dialogueScreen_loop:
 	
 	li t1, 0xFF200000	               # carrega o endereço de controle do KDMMIO
@@ -221,6 +225,10 @@ victoryRoutine:
 	la a0, victoryScreen
 	call drawFullImage
 	
+	la a0, winSong
+	li a1, 81
+	call playSong
+	
 	dialogueSuccess_victoryLoop:
 	
 	li t1, 0xFF200000	                       # carrega o endereço de controle do KDMMIO
@@ -240,6 +248,11 @@ victoryRoutine:
 mainMenu:
 	la a0, mainMenuImage
 	call drawFullImage
+	
+	# play menu song
+	la a0, menuSong
+	li a1, 24
+	call playSong
 	
 	mainMenu_loop:
 	li t1, 0xFF200000	                       # carrega o endereço de controle do KDMMIO
@@ -356,6 +369,12 @@ deathScreen:
 	la a0, badEndImage
 	call drawFullImage
 	
+	
+	# Play death sound
+	la a0, deathSound
+	li a1, 68
+	call playSong
+	
 	deathScreen_loop:
 	
 	li t1, 0xFF200000	               # carrega o endereço de controle do KDMMIO
@@ -366,6 +385,72 @@ deathScreen:
 	call clearScreen
 	
 	j main
+
+# a0 = song array
+# a1 = instrument
+playSong:
+	addi sp, sp, -4
+	sw ra, 0(sp)
+
+	# t0 = i = 0
+	mv t0, zero
+	
+	# t2 = length*8
+	mv t2, a0
+	lw t2, 0(a0)
+	li t1, 8
+	mul t2, t2, t1
+	
+	# t3 = instrument
+	mv t3, a1
+	
+	# t4 = song array notes
+	mv t4, a0
+	addi t4, t4, 4
+	
+	playSong_loop:
+	# t5 = pitch address
+	# t6 = pitch
+	add t5, t4, t0
+	lw t6, 0(t5)
+	
+	# a0 = pitch
+	mv a0, t6
+	# a1 = duration
+	lw t6, 4(t5)
+	mv a1, t6
+	# a2 = instrument
+	mv a2, t3
+	# a3 = volume = 127
+	li a3, 127
+	
+	# play sound
+	li a7, 31
+	ecall
+	
+	# wait for note to play
+	mv a0, a1
+	li a7, 32
+	ecall
+	
+	addi t0, t0, 8
+	
+	beq t0, t2, playSong_end
+	
+	# if key is pressed return
+	li t6, 0xFF200000	                       # carrega o endereço de controle do KDMMIO
+	lw t5, 0(t6)			                   # Le bit de Controle Teclado
+	andi t5, t5,0x0001		           		   # mascara o bit menos significativo
+   	bne t5, zero, playSong_end  			   # Se não há tecla pressionada então retorna
+	
+	j playSong_loop
+	
+	playSong_end:
+	lw ra, 0(sp)
+	addi sp, sp, 4
+	ret
+	
+
   	
 
 # s0 = frame
